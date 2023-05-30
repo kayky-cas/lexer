@@ -16,7 +16,7 @@ enum TokenType {
     Semicolon,
     Slash,
     Star,
-    EOF,
+    Eof,
     Word,
     Integer,
 }
@@ -75,7 +75,7 @@ impl<'a> Iterator for Lexer<'a> {
             }
             b'(' => {
                 let token = Token::new(Paren(BracketState::Open), &slice[..1]);
-                self.braces_stack.push(token.token_type.clone());
+                self.braces_stack.push(token.token_type);
                 token
             }
             b')' => {
@@ -88,7 +88,7 @@ impl<'a> Iterator for Lexer<'a> {
             }
             b'{' => {
                 let token = Token::new(Curly(BracketState::Open), &slice[..1]);
-                self.braces_stack.push(token.token_type.clone());
+                self.braces_stack.push(token.token_type);
                 token
             }
             b'}' => {
@@ -101,7 +101,7 @@ impl<'a> Iterator for Lexer<'a> {
             }
             b'[' => {
                 let token = Token::new(Square(BracketState::Open), &slice[..1]);
-                self.braces_stack.push(token.token_type.clone());
+                self.braces_stack.push(token.token_type);
                 token
             }
             b']' => {
@@ -119,7 +119,7 @@ impl<'a> Iterator for Lexer<'a> {
             b';' => Token::new(Semicolon, &slice[..1]),
             b'/' => Token::new(Slash, &slice[..1]),
             b'*' => Token::new(Star, &slice[..1]),
-            b'\0' => Token::new(EOF, &slice[..1]),
+            b'\0' => Token::new(Eof, &slice[..1]),
             b'a'..=b'z' | b'A'..=b'Z' => {
                 let mut end = 1;
                 while end < slice.len() && slice[end].is_ascii_alphanumeric() {
