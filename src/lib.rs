@@ -112,7 +112,7 @@ impl<'a> Iterator for Lexer<'a> {
                     panic!("Unexpected ']'");
                 }
             }
-            b',' => Token::new(Comm, &slice[..1]),
+            b',' => Token::new(Comma, &slice[..1]),
             b'.' => Token::new(Dot, &slice[..1]),
             b'-' => Token::new(Minus, &slice[..1]),
             b'+' => Token::new(Plus, &slice[..1]),
