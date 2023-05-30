@@ -16,6 +16,8 @@ enum TokenType {
     Slash,
     Star,
     EOF,
+    Word,
+    Integer,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -47,10 +49,6 @@ impl Lexer<'_> {
             braces_stack: Vec::new(),
         }
     }
-
-    pub fn validate(&self) -> bool {
-        true
-    }
 }
 
 use TokenType::*;
@@ -60,6 +58,10 @@ impl<'a> Iterator for Lexer<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.position >= self.source.len() {
+            if !self.braces_stack.is_empty() {
+                panic!("Unexpected EOF");
+            }
+
             return None;
         }
 
@@ -80,7 +82,7 @@ impl<'a> Iterator for Lexer<'a> {
                 if let Some(Paren(BracketState::Open)) = self.braces_stack.pop() {
                     token
                 } else {
-                    return None;
+                    panic!("Unexpected ')'");
                 }
             }
             b'{' => {
@@ -93,7 +95,7 @@ impl<'a> Iterator for Lexer<'a> {
                 if let Some(Brace(BracketState::Open)) = self.braces_stack.pop() {
                     token
                 } else {
-                    return None;
+                    panic!("Unexpected '}'");
                 }
             }
             b',' => Token::new(Comma, &slice[..1]),
@@ -104,6 +106,20 @@ impl<'a> Iterator for Lexer<'a> {
             b'/' => Token::new(Slash, &slice[..1]),
             b'*' => Token::new(Star, &slice[..1]),
             b'\0' => Token::new(EOF, &slice[..1]),
+            b'a'..=b'z' | b'A'..=b'Z' => {
+                let mut end = 1;
+                while end < slice.len() && slice[end].is_ascii_alphanumeric() {
+                    end += 1;
+                }
+                Token::new(Word, &slice[..end])
+            }
+            b'0'..=b'9' => {
+                let mut end = 1;
+                while end < slice.len() && slice[end].is_ascii_digit() {
+                    end += 1;
+                }
+                Token::new(Integer, &slice[..end])
+            }
             _ => panic!("Unknown token"),
         };
 
