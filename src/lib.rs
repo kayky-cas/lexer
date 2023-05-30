@@ -7,7 +7,8 @@ enum BracketState {
 #[derive(Debug, PartialEq, Clone, Copy)]
 enum TokenType {
     Paren(BracketState),
-    Brace(BracketState),
+    Curly(BracketState),
+    Square(BracketState),
     Comma,
     Dot,
     Minus,
@@ -86,19 +87,32 @@ impl<'a> Iterator for Lexer<'a> {
                 }
             }
             b'{' => {
-                let token = Token::new(Brace(BracketState::Open), &slice[..1]);
+                let token = Token::new(Curly(BracketState::Open), &slice[..1]);
                 self.braces_stack.push(token.token_type.clone());
                 token
             }
             b'}' => {
-                let token = Token::new(Brace(BracketState::Close), &slice[..1]);
-                if let Some(Brace(BracketState::Open)) = self.braces_stack.pop() {
+                let token = Token::new(Curly(BracketState::Close), &slice[..1]);
+                if let Some(Curly(BracketState::Open)) = self.braces_stack.pop() {
                     token
                 } else {
-                    panic!("Unexpected '}'");
+                    panic!("Unexpected '}}'");
                 }
             }
-            b',' => Token::new(Comma, &slice[..1]),
+            b'[' => {
+                let token = Token::new(Square(BracketState::Open), &slice[..1]);
+                self.braces_stack.push(token.token_type.clone());
+                token
+            }
+            b']' => {
+                let token = Token::new(Square(BracketState::Close), &slice[..1]);
+                if let Some(Square(BracketState::Open)) = self.braces_stack.pop() {
+                    token
+                } else {
+                    panic!("Unexpected ']'");
+                }
+            }
+            b',' => Token::new(Comm, &slice[..1]),
             b'.' => Token::new(Dot, &slice[..1]),
             b'-' => Token::new(Minus, &slice[..1]),
             b'+' => Token::new(Plus, &slice[..1]),
@@ -158,8 +172,8 @@ mod tests {
         test_lexer(
             "{}",
             vec![
-                TokenType::Brace(BracketState::Open),
-                TokenType::Brace(BracketState::Close),
+                TokenType::Curly(BracketState::Open),
+                TokenType::Curly(BracketState::Close),
             ],
         );
     }
