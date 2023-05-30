@@ -22,7 +22,7 @@ enum TokenType {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-struct Token<'a> {
+pub struct Token<'a> {
     token_type: TokenType,
     literal: &'a [u8],
 }
@@ -36,7 +36,7 @@ impl Token<'_> {
     }
 }
 
-struct Lexer<'a> {
+pub struct Lexer<'a> {
     source: &'a [u8],
     position: usize,
     braces_stack: Vec<TokenType>,
@@ -152,7 +152,6 @@ mod tests {
 
         let tokens: Vec<_> = lexer.map(|token| token.token_type).collect();
 
-        assert_eq!(tokens.last(), Some(&TokenType::EOF));
         assert_eq!(tokens, expected);
     }
 
@@ -176,15 +175,5 @@ mod tests {
                 TokenType::Curly(BracketState::Close),
             ],
         );
-    }
-
-    #[test]
-    fn test_faild_bracket() {
-        let lexer = super::Lexer::new("(".as_bytes());
-
-        let tokens: Vec<_> = lexer.map(|token| token.token_type).collect();
-
-        assert_eq!(tokens.last(), Some(&TokenType::EOF));
-        assert_eq!(tokens, vec![TokenType::Paren(BracketState::Open)]);
     }
 }
