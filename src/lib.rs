@@ -154,7 +154,7 @@ impl<'a> Iterator for Lexer<'a> {
                     token_type: Bigger, ..
                 }) = self.next()
                 {
-                    Token::new(Arrow, &slice[..2])
+                    return Some(Token::new(Arrow, &slice[..2]));
                 } else {
                     self.position = old;
                     Token::new(Minus, &slice[..1])
@@ -293,5 +293,21 @@ mod tests {
         ];
 
         test_lexer(input, expected);
+    }
+
+    #[test]
+    fn test_arrow() {
+        let inputs = vec!["->", "=>", "->>", "->>>", "-->"];
+        let expected = vec![
+            vec![TokenType::Arrow],
+            vec![TokenType::Assign, TokenType::Bigger],
+            vec![TokenType::Arrow, TokenType::Bigger],
+            vec![TokenType::Arrow, TokenType::Bigger, TokenType::Bigger],
+            vec![TokenType::Minus, TokenType::Arrow],
+        ];
+
+        for idx in 0..inputs.len() {
+            test_lexer(inputs[idx], expected[idx].clone())
+        }
     }
 }
